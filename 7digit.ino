@@ -15,8 +15,8 @@ void setup() {
   Serial1.begin(9600);
 
   byte numDigits = 8;
-  byte digitPins[] = { 5, 4, 3, 2, 9, 8, 7, 6 };
-  byte segmentPins[] = { 20, 21, 16, 10, 14, 18, 15, 19 };
+  byte digitPins[] = { 15, 14, 16, 10, 21, 20, 19, 18 };
+  byte segmentPins[] = { 3, 2, 8, 9, 7, 5, 6, 4 };
 
   bool resistorsOnSegments = true;
   byte hardwareConfig = NP_COMMON_CATHODE;
