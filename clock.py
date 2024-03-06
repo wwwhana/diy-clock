@@ -58,5 +58,14 @@ sched.start()
 sched.add_job(syncTime, 'interval', seconds=10, id="tick_event")
 sched.add_job(setBright, 'interval', seconds=5, id="bright_event")
 
+before  = datetime.datetime.now()
+
 while True:
+  now = datetime.datetime.now()
+  diff = (now - before).seconds
+  before = now
+
+  if diff > 3:
+    exit(1)
+
   time.sleep(1)
