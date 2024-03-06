@@ -1,3 +1,4 @@
+import wiringpi
 import subprocess
 import serial
 import datetime
@@ -15,14 +16,19 @@ ser = serial.Serial(
     timeout=8
     )
 
+pin = 10
+INPUT = 0
+OUTPUT = 1
 
 def initClock():
-  subprocess.run('gpio mode 10 in'.split(" "), stdout=subprocess.DEVNULL)
+  wiringpi.wiringPiSetup()
+  wiringpi.pinMode(pin, INPUT)
+
   cmd = f"SETMODE|CLOCK\n"
   ser.write(str.encode(cmd))
+
 def readBright():
-  r = subprocess.run('gpio read 10'.split(" "), stdout=subprocess.PIPE, text=True).stdout.strip()
-  return int(r.strip())
+  return wiringpi.digitalRead(pin)
 
 def syncTime():
    now = datetime.datetime.now()
