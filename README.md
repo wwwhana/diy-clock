@@ -21,7 +21,7 @@ The command must end with a newline character (\\n).
 | command | argument detail |  | example |
 |---------|-----------------|--| ------- |
 | SETMODE\|{mode} | `mode`: CLOCK(defualt), DETAILCLOCK, BLINK, STR | |SETMODE\|CLOKCK|
-| SETTIME\|{time} | `time`: yyyy.MM.dd HH:mm:ss |  |SETTIME\|2024.01.01 16.30.00|
+| SETTIME\|{time} | `time`: yyyy.MM.dd HH:mm:ss |  |SETTIME\|2024.01.01 16:30:00|
 | SETSTR\|{msg}\|{dp}\|{duration} | `dp`: Set whether to display the DP position of the segment. Set by substituting each digit into 8 bits (0-255)<sup>[1](#footnote_1)</sup>.<br />`duration`: second by second. If it is less than 0, it is displayed as unlimited.  | First need to set STR mode | SETSTR\|SHOWCLOC\|16\|-1 <sup>[2](#footnote_2)</sup>
 | SETBR\|{brightness} | `brightnes`s: -200 to 200 | set segment brightness | SETBR\|70 |
 | SETHUMIDITY\|{humidity} | `humidity`: float || SETHUMIDITY\|61.4|
