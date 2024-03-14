@@ -4,8 +4,14 @@ SevSeg sevseg;
 
 String display = "NREADY__";
 String mode = "CLOCK";
+String latestClockMode = "CLOCK";
+time_t timmer_start = now();
+long timmer_duration = 0; // second
 int decPlaces = 0;
 uint8_t segs[8] = {};
+
+float humidity = 99.9f;
+float temperature = -99.9f;
 
 unsigned long previousMillis = 0;  // will store last time LED was updated
 const long interval = 20;          // interval at which to blink (milliseconds)
@@ -40,8 +46,6 @@ void setup() {
 }
 
 void loop() {
-
-
   unsigned long currentMillis = millis();
 
   if (currentMillis - previousMillis >= interval) {
@@ -52,8 +56,12 @@ void loop() {
       decPlaces = 0;
       sevseg.blank();
     } else if (mode == "STR") {
+      time_t current = now();
 
-      Serial.println(display);
+      if (timmer_duration >= 0 && current - timmer_start >= timmer_duration) {
+        mode = latestClockMode;
+        timmer_duration = -1;
+      }
 
       sevseg.setChars(display.c_str());
       sevseg.getSegments(segs);
@@ -62,28 +70,105 @@ void loop() {
 
 
       sevseg.setSegments(segs);
-    } else {
-      display = "NREADY__";
-      decPlaces = 0;
-
-      char buffer[8];
+    } else if (mode == "DETAILCLOCK") {
+      latestClockMode = mode;
       time_t t = now();
-
       int seconds = second(t);
+      int flag = seconds % 15 / 5;
 
-      sprintf(buffer, "%02d%02d%02d%02d", hour(t), minute(t), month(t), day(t));
-      sevseg.setChars(buffer);
-      sevseg.getSegments(segs);
-
-      int flag = 2 | ((seconds % 2 == 0) ? 32 : 0 );
-
-      setDecPoint(segs, flag);
-
-      sevseg.setSegments(segs);
+      switch (flag) {
+        case 1:
+          showDate();
+          break;
+        case 2:
+          showHumidityCelsius();
+          break;
+        default:
+          showDetailCLock();
+      }
+    } else {
+      latestClockMode = "CLOCK";
+      showSimpleCLock();
     }
 
     sevseg.refreshDisplay();
   }
+}
+
+void showSimpleCLock() {
+  display = "NREADY__";
+  decPlaces = 0;
+
+  char buffer[8];
+  time_t t = now();
+
+  int seconds = second(t);
+
+  sprintf(buffer, "%02d%02d%02d%02d", hour(t), minute(t), month(t), day(t));
+  sevseg.setChars(buffer);
+  sevseg.getSegments(segs);
+
+  int flag = 2 | ((seconds % 2 == 0) ? 32 : 0);
+
+  setDecPoint(segs, flag);
+
+  sevseg.setSegments(segs);
+}
+
+void showDetailCLock() {
+  display = "NREADY__";
+  decPlaces = 0;
+
+  char buffer[8];
+  time_t t = now();
+
+  int seconds = second(t);
+  int hours = hour(t);
+
+  sprintf(buffer, "%02d%02d%02d %c", hours % 12 > 0 ? hours % 12 : 12, minute(t), second(t), hours < 12 ? 'A' : 'P');
+  sevseg.setChars(buffer);
+  sevseg.getSegments(segs);
+
+  int flag = 8 | ((seconds % 2 == 0) ? 40 : 0);
+
+  setDecPoint(segs, flag);
+
+  sevseg.setSegments(segs);
+}
+
+void showDate() {
+  char buffer[8];
+  time_t t = now();
+
+  sprintf(buffer, "%04d%02d%02d", year(t), month(t), day(t));
+  sevseg.setChars(buffer);
+  sevseg.getSegments(segs);
+
+  int flag = 10;
+
+  setDecPoint(segs, flag);
+
+  sevseg.setSegments(segs);
+}
+
+void showHumidityCelsius() {
+  char buffer[8];
+  int flag = 18;
+
+  if (temperature > 0) {
+
+    sprintf(buffer, "H%2d%d%2d%d ", (int)humidity, (int)(humidity * 10) % 10, (int)temperature, (int)(temperature * 10) % 10);
+  } else {
+    sprintf(buffer, "H%2d%d%2d%d ", (int)humidity, (int)(humidity * 10) % 10, (int)temperature * -1, (int)(temperature * -1 * 10) % 10);
+    flag = 26;
+  }
+  sevseg.setChars(buffer);
+  sevseg.getSegments(segs);
+
+  segs[7] = 225;  //
+
+  setDecPoint(segs, flag);
+  sevseg.setSegments(segs);
 }
 
 void setDecPoint(uint8_t segs[8], int flag) {
@@ -100,8 +185,6 @@ void setDecPoint(uint8_t segs[8], int flag) {
 void serialEvent1() {
   if (Serial1.available() > 0) {
     String mode = Serial1.readStringUntil('|');
-    Serial.println(mode);
-    // Serial1.print(mode);
 
     if (mode == "SETTIME") {
       setTime();
@@ -113,22 +196,37 @@ void serialEvent1() {
       setSTR();
     } else if (mode == "GETTIME") {
       getTime();
+    } else if (mode == "SETHUMIDITY") {
+      setHumidity();
+    } else if (mode == "SETTEMPERATURE") {
+      setTemperature();
     } else {
     }
   }
 }
 
 void getTime() {
-  char buffer[20];
+
+  char buffer[6];
   time_t t = now();
 
-  sprintf(buffer, "%04d.%02d.%02d %02d:%02d:%02d", year(t), month(t), day(t), hour(t), minute(t), second(t));
+  sprintf(buffer, "%04d.", year(t));
+  Serial1.write(buffer);
+  sprintf(buffer, "%02d.", month(t));
+  Serial1.write(buffer);
+  sprintf(buffer, "%02d ", day(t));
+  Serial1.write(buffer);
 
-  if (Serial1.availableForWrite() > 0) {
-    Serial1.println(buffer);
-  }
+  sprintf(buffer, "%02d:", hour(t));
+  Serial1.write(buffer);
 
-  Serial.println(buffer);
+  sprintf(buffer, "%02d:", minute(t));
+  Serial1.write(buffer);
+
+  sprintf(buffer, "%02d\n", second(t));
+  Serial1.write(buffer);
+
+  // Serial1.flush();
 }
 
 
@@ -140,10 +238,6 @@ void setTime() {
   int min = Serial1.readStringUntil(':').toInt();
   int sec = Serial1.readStringUntil('\n').toInt();
 
-  char buffer[30];
-  // sprintf(buffer, "%4d%2d%2d %2d:%2d:%2d", year, month, day, hour, min, sec);
-  // Serial.println(buffer);
-
   setTime(hour, min, sec, day, month, year);
 }
 
@@ -152,6 +246,16 @@ void setMode() {
   tmp.toUpperCase();
 
   mode = tmp;
+}
+
+void setHumidity() {
+  String tmp = Serial1.readStringUntil('\n');
+  humidity = tmp.toFloat();
+}
+
+void setTemperature() {
+  String tmp = Serial1.readStringUntil('\n');
+  temperature = tmp.toFloat();
 }
 
 void setBright() {
@@ -171,7 +275,10 @@ void setBright() {
 
 void setSTR() {
   String tmp_str = Serial1.readStringUntil('|');
-  int tmp_decPlaces = Serial1.readStringUntil('\n').toInt();
+  int tmp_decPlaces = Serial1.readStringUntil('|').toInt();
+  long tmp_timmer_duration = Serial1.readStringUntil('\n').toInt();
   display = tmp_str;
   decPlaces = tmp_decPlaces;
+  timmer_duration = tmp_timmer_duration;
+  timmer_start = now();
 }
