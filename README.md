@@ -2,17 +2,19 @@
 
 ## hardware
  * Orange Pi Zero 2w (os: ubuntu 22.04.4)
+ * Arduino Pro Micro * 2
+  * * Arduino A (for Segment Control. TX/RX <-> Arduino B RX/TX, [7digit.ino](7digit.ino))
+  * * Arduino B (for Sensor and Segment Control. GPIO 8/9 <-> Orange Pi UART 2, TX/RX <-> Arduino A RX/TX, [sensor.ino](sensor.ino))
  * 8-digit segment display
- * Arduino Pro Micro (for segment control. uart(pin1, pin2) <-> orange Pi (UART_4_RX/TX, /dev/ttyS3). 9600 bound. [7digit.ino](7digit.ino))
+
  * DS3231 -> orange Pi 2w
- * CDS cell(조도 센서) (GPIO no.18, wiringpi no.10) 
- * DHT11 (GPIO no.27, wiringpi no.17)
+ * CDS cell(조도 센서) (Arduino B GPIO 5 pin) 
+ * ATH10 (Arduino B GPIO 2(SDA), 3(SDL) pin)
+
 
 ## require
  * pyserial
  * apscheduler
- * [orangepi-xunlong/wiringOP-Python](https://github.com/orangepi-xunlong/wiringOP-Python)
- * [wwwhana/DHT11_Python_OrangePi](https://github.com/wwwhana/DHT11_Python_OrangePi)
 
 ### 7segment control command
 
