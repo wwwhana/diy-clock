@@ -43,3 +43,8 @@ The command must end with a newline character (\\n).
  * /api/clock/sync : Forced time synchronization on Segment
  * /api/clock/msg?msg={msg}&dot={dot}&duration={duration} : Displays 8 characters on segment
   * /api/clock/blink: turn off Display
+
+
+### clock.py
+
+Synchronizes the clock, adjusts brightness, and reads sensors. Must register as a service
