@@ -15,10 +15,6 @@ ser = serial.Serial(
     timeout=8
     )
 
-def initClock():
-
-  cmd = f"SETMODE|DETAILCLOCK\n"
-  ser.write(str.encode(cmd))
 
 def readSensor():
   while True:
@@ -59,15 +55,10 @@ def setBright():
 
   ser.write(str.encode(f"SETBR|{bright}\n"))
 
-
-
 ser.isOpen()
 
-startup = datetime.datetime.now()
-
-initClock()
-setBright()
 syncTime()
+setBright()
 
 sched = BackgroundScheduler()
 sched.start()

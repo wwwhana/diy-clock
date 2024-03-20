@@ -1,0 +1,11 @@
+{
+    "port": "/dev/ttyS1",
+    "baudrate": 9600,
+    "parity": "N",
+    "stopbits": 1,
+    "bytesize": 8,
+    "timeout": 8,
+    "tick": 0.1,
+    "showAMPM": false,
+    "showSec": false
+}

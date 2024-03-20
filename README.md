@@ -1,20 +1,17 @@
 # Diy Clock
 
+Arduino + Orange pi base 7Segment Clock.
+
 ## hardware
  * Orange Pi Zero 2w (os: ubuntu 22.04.4)
  * Arduino Pro Micro * 2
-  * * Arduino A (for Segment Control. TX/RX <-> Arduino B RX/TX, [7digit.ino](7digit.ino))
-  * * Arduino B (for Sensor and Segment Control. GPIO 8/9 <-> Orange Pi UART 2, TX/RX <-> Arduino A RX/TX, [sensor.ino](sensor.ino))
+  * * Arduino A (for Segment Control. TX/RX <-> Arduino B RX/TX, [7digit.ino](arduino/7digit.ino))
+  * * Arduino B (for Sensor and Segment Control. GPIO 8/9 <-> Orange Pi UART 2, TX/RX <-> Arduino A RX/TX, [sensor.ino](arduino/sensor.ino))
  * 8-digit segment display
 
  * DS3231 -> orange Pi 2w
  * CDS cell(조도 센서) (Arduino B GPIO 5 pin) 
  * ATH10 (Arduino B GPIO 2(SDA), 3(SDL) pin)
-
-
-## require
- * pyserial
- * apscheduler
 
 ### 7segment control command
 
@@ -40,3 +37,9 @@ The command must end with a newline character (\\n).
 |DETAILCLOCK| There are three screens that change every 5 seconds. <br /> Display Clock: `%I:%M:%S %p`  <br /> Display Date: `%Y.%m.%d`<br />Display Humidity & Temperature: `H00.0 00.0°C`.<br />Both temperature and humidity are displayed as single-digit decimals. If the temperature is below 0 degrees, it is displayed as `.00.0°C`.|
 |STR|Displays an 8-character string. Characters that cannot be displayed in 7 segments are not displayed. If no string is set, `NREADY__` is displayed.|
 |BLINK| Turn off the screen. |
+
+## API
+ * /api/sensors/ : Display sensor information in json format
+ * /api/clock/sync : Forced time synchronization on Segment
+ * /api/clock/msg?msg={msg}&dot={dot}&duration={duration} : Displays 8 characters on segment
+  * /api/clock/blink: turn off Display

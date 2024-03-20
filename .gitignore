@@ -1,0 +1,4 @@
+**/__pycache__
+sensors.json
+config.json
+db.sqlite3
