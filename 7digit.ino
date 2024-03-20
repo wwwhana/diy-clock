@@ -3,10 +3,10 @@
 SevSeg sevseg;
 
 String display = "NREADY__";
-String mode = "CLOCK";
-String latestClockMode = "CLOCK";
+String mode = "DETAILCLOCK";
+String latestClockMode = "DETAILCLOCK";
 time_t timmer_start = now();
-long timmer_duration = 0; // second
+long timmer_duration = 0;  // second
 int decPlaces = 0;
 uint8_t segs[8] = {};
 
@@ -25,8 +25,6 @@ void setup() {
   byte numDigits = 8;
   byte digitPins[] = { 15, 14, 16, 10, 21, 20, 19, 18 };
   byte segmentPins[] = { 3, 2, 8, 9, 7, 5, 6, 4 };
-
-
 
   bool resistorsOnSegments = true;
   byte hardwareConfig = COMMON_ANODE;
@@ -70,7 +68,10 @@ void loop() {
 
 
       sevseg.setSegments(segs);
-    } else if (mode == "DETAILCLOCK") {
+    } else if (mode == "CLOCK") {
+      latestClockMode = "CLOCK";
+      showSimpleCLock();
+    } else {
       latestClockMode = mode;
       time_t t = now();
       int seconds = second(t);
@@ -86,9 +87,6 @@ void loop() {
         default:
           showDetailCLock();
       }
-    } else {
-      latestClockMode = "CLOCK";
-      showSimpleCLock();
     }
 
     sevseg.refreshDisplay();
@@ -153,19 +151,26 @@ void showDate() {
 
 void showHumidityCelsius() {
   char buffer[8];
+  char tempaBuffer[8];
+  char humidityBuffer[8];
   int flag = 18;
+
+  dtostrf(humidity, 4, 1, humidityBuffer);
+  dtostrf(temperature, 4, 1, tempaBuffer);
 
   if (temperature > 0) {
 
-    sprintf(buffer, "H%2d%d%2d%d ", (int)humidity, (int)(humidity * 10) % 10, (int)temperature, (int)(temperature * 10) % 10);
+    sprintf(buffer, "H%s%s ", humidityBuffer, tempaBuffer);
   } else {
-    sprintf(buffer, "H%2d%d%2d%d ", (int)humidity, (int)(humidity * 10) % 10, (int)temperature * -1, (int)(temperature * -1 * 10) % 10);
+    dtostrf(temperature * -1, 4, 1, tempaBuffer);
+    sprintf(buffer, "H%s%s ", humidityBuffer, tempaBuffer);
     flag = 26;
   }
+
   sevseg.setChars(buffer);
   sevseg.getSegments(segs);
 
-  segs[7] = 225;  //
+  segs[7] = 225;  //°C(upper)
 
   setDecPoint(segs, flag);
   sevseg.setSegments(segs);
@@ -182,9 +187,17 @@ void setDecPoint(uint8_t segs[8], int flag) {
   }
 }
 
-void serialEvent1() {
+void serialEventRun(void) {
+  // if (Serial.available()) serialEvent();
+  if (Serial1.available()) serial1Event();
+}
+
+void serial1Event() {
   if (Serial1.available() > 0) {
     String mode = Serial1.readStringUntil('|');
+    mode.toUpperCase();
+
+    Serial.println(mode);
 
     if (mode == "SETTIME") {
       setTime();
