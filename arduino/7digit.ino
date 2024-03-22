@@ -75,13 +75,13 @@ void loop() {
       latestClockMode = mode;
       time_t t = now();
       int seconds = second(t);
-      int flag = seconds % 15 / 5;
+      int flag = seconds / 15;
 
       switch (flag) {
         case 1:
           showDate();
           break;
-        case 2:
+        case 3:
           showHumidityCelsius();
           break;
         default:
@@ -153,18 +153,20 @@ void showHumidityCelsius() {
   char buffer[8];
   char tempaBuffer[8];
   char humidityBuffer[8];
-  int flag = 18;
+  int flag = 0x12;
 
-  dtostrf(humidity, 4, 1, humidityBuffer);
-  dtostrf(temperature, 4, 1, tempaBuffer);
+  dtostrf(humidity * 10, 3, 0, humidityBuffer);
+  dtostrf(temperature * 10, 3, 0, tempaBuffer);
+
+  Serial.println(humidityBuffer);
+  Serial.println(temperature);
 
   if (temperature > 0) {
-
     sprintf(buffer, "H%s%s ", humidityBuffer, tempaBuffer);
   } else {
-    dtostrf(temperature * -1, 4, 1, tempaBuffer);
+    dtostrf(temperature * -1 * 10, 3, 0, tempaBuffer);
     sprintf(buffer, "H%s%s ", humidityBuffer, tempaBuffer);
-    flag = 26;
+    flag = 0x1A;
   }
 
   sevseg.setChars(buffer);
